@@ -1,0 +1,62 @@
+# vcgen-exporter.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcgen-exporter
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: vcgen-exporter }
+  template:
+    metadata:
+      labels: { app: vcgen-exporter }
+    spec:
+      containers:
+        - name: vcgen-exporter
+          image: docker.io/2281995/vcgen-exporter
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          securityContext:
+            privileged: true
+      # if you need host devices, you might also add volume mounts to /dev/* here
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vcgen-exporter
+  namespace: monitoring
+  labels:
+    app: vcgen-exporter
+spec:
+  type: ClusterIP 
+  selector:
+    app: vcgen-exporter
+  ports:
+    - name: http
+      port: 8080       # external port (same as docker -p 8080:8080)
+      targetPort: 8080
+---
+# servicemonitor-vcgen-exporter.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vcgen-exporter
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: vcgen-exporter          # must match the Service's labels
+  namespaceSelector:
+    matchNames: ["monitoring"]
+  endpoints:
+    - port: http                   # name of the Service port
+      path: /metrics
+      interval: 15s
+      scheme: http  

@@ -1,0 +1,6 @@
+specVersion: 0.36.0
+name: knative-power-aware
+runtime: go
+created: 2025-10-04T23:22:31.771999031+02:00
+build: false
+push: false

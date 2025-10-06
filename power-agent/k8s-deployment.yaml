@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: power-agent
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels: { app: power-agent }
+  template:
+    metadata:
+      labels: { app: power-agent }
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: agent
+          image: juliandeutsch/raspi-power-agent:v0.0.3
+          args: ["--listen=:8085", "--poll-interval=5s", "--debug"]
+          ports:
+            - containerPort: 8085
+              hostPort: 8085
+          securityContext:
+            privileged: true          # simplest on Pi; enables device access
+            runAsUser: 0              # run as root
+            runAsGroup: 0
+            allowPrivilegeEscalation: true
+          volumeMounts:
+            - name: vcgencmd-bin
+              mountPath: /usr/bin/vcgencmd
+              readOnly: true
+            - name: ldso
+              mountPath: /lib/ld-linux-aarch64.so.1
+              readOnly: true
+            - name: libc
+              mountPath: /lib/aarch64-linux-gnu/libc.so.6
+              readOnly: true
+            - name: dev-vcio
+              mountPath: /dev/vcio
+              readOnly: true
+      volumes:
+        - name: vcgencmd-bin
+          hostPath: { path: /usr/bin/vcgencmd, type: File }
+        - name: ldso
+          hostPath: { path: /lib/ld-linux-aarch64.so.1, type: File }
+        - name: libc
+          hostPath: { path: /lib/aarch64-linux-gnu/libc.so.6, type: File }
+        - name: dev-vcio
+          hostPath:
+            path: /dev/vcio
+            type: CharDevice
