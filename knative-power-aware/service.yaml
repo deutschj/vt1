@@ -1,0 +1,12 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: power-aware
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.io/juliandeutsch/knative-power-aware:ko-arm64
+          env:
+            - name: POWER_API_URL
+              value: http://power-agent-svc.monitoring.svc.cluster.local:8085/power

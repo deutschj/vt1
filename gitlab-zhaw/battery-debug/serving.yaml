@@ -1,0 +1,17 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: battery-debug
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.io/juliandeutsch/battery-debug:0.0.1
+          env:
+            - name: POWER_STATUS_URL
+              value: "http://battery-simulator-svc.monitoring.svc.cluster.local:8080/status"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName

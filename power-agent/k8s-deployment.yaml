@@ -48,3 +48,17 @@ spec:
           hostPath:
             path: /dev/vcio
             type: CharDevice
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: power-agent-svc
+  namespace: monitoring
+spec:
+  selector:
+      app: power-agent
+  ports:
+  - protocol: TCP
+    port: 8085
+    targetPort: 8085
+

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: battery-simulator
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels: { app: battery-simulator }
+  template:
+    metadata:
+      labels: { app: battery-simulator }
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: agent
+          image: juliandeutsch/battery-simulator:0.0.2
+          args: ["--listen=:8080"]
+          ports:
+            - containerPort: 8080
+              hostPort: 8080
+          securityContext:
+            privileged: true          # simplest on Pi; enables device access
+            runAsUser: 0              # run as root
+            runAsGroup: 0
+            allowPrivilegeEscalation: true
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: battery-simulator-svc
+  namespace: monitoring
+spec:
+  selector:
+      app: battery-simulator
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+

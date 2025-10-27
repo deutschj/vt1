@@ -1,0 +1,16 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: run-when-power-ok
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: dev.juliand.power.status
+      power_state: ok        # <- only these events pass through
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: cloudevents-test-func
+
